@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Express - MVP</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f5ef;color:#17352c}
+  .wrap{max-width:1050px;margin:auto;padding:24px}
+  header{background:#173f35;color:white;border-radius:22px;padding:28px 30px;margin-bottom:20px}
+  header h1{margin:0 0 6px;font-size:32px}
+  header p{margin:0;color:#dce9df}
+  nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
+  nav button,.primary,.secondary{border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}
+  nav button{background:white;color:#173f35}
+  nav button.active,.primary{background:#1e5849;color:white}
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}
+  .card{background:white;border-radius:20px;padding:22px;box-shadow:0 5px 20px rgba(0,0,0,.06);margin-bottom:20px}
+  h2{margin-top:0;font-size:22px}
+  label{display:block;font-weight:700;margin:14px 0 6px}
+  input,select,textarea{width:100%;padding:12px;border:1px solid #d6ddd7;border-radius:10px;font-size:15px;background:#fff}
+  textarea{min-height:80px;resize:vertical}
+  .services{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .service{border:2px solid #e0e6e1;border-radius:13px;padding:14px;cursor:pointer;background:white}
+  .service.selected{border-color:#1e5849;background:#edf5ee}
+  .service b{display:block;margin-bottom:4px}
+  .small{font-size:13px;color:#66736d}
+  .price{font-size:28px;font-weight:800;margin:10px 0}
+  .tag{display:inline-block;padding:5px 9px;border-radius:20px;background:#edf5ee;margin:3px;font-size:12px;font-weight:700}
+  .success{display:none;text-align:center;padding:25px}
+  .success .check{font-size:50px}
+  .code{background:#f0f4ef;padding:14px;border-radius:12px;font-weight:800;letter-spacing:1px}
+  .status{display:flex;gap:10px;align-items:center;margin:10px 0}
+  .dot{width:12px;height:12px;border-radius:50%;background:#1e5849}
+  .hidden{display:none}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:12px;border-bottom:1px solid #e5e9e5;font-size:14px}
+  th{color:#52615a}
+  .badge{padding:5px 8px;border-radius:15px;font-size:12px;font-weight:700;background:#edf5ee}
+  .metric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .metric div{background:#f2f5f0;border-radius:14px;padding:15px}
+  .metric strong{font-size:25px;display:block}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}.services{grid-template-columns:1fr}.metric{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>📍 Campus Express</h1>
+  <p>Tu tiempo, en buenas manos. MVP de movilidad y encargos dentro del campus.</p>
+</header>
+
+<nav>
+  <button id="tabRequest" class="active" onclick="showTab('request')">Solicitar servicio</button>
+  <button id="tabAdmin" onclick="showTab('admin')">Vista de solicitudes</button>
+</nav>
+
+<section id="request">
+  <div class="grid">
+    <div class="card">
+      <h2>¿Qué necesitas?</h2>
+      <p class="small">Selecciona un servicio para comenzar.</p>
+      <div class="services">
+        <div class="service" data-service="Traslado dentro del campus" data-price="20" onclick="selectService(this)">🚶 <b>Traslado</b><span class="small">Moverte dentro del campus</span></div>
+        <div class="service" data-service="Entrega de alimentos" data-price="25" onclick="selectService(this)">🍔 <b>Alimentos</b><span class="small">Recoger y entregar comida</span></div>
+        <div class="service" data-service="Materiales escolares" data-price="20" onclick="selectService(this)">📚 <b>Materiales</b><span class="small">Libros, útiles y materiales</span></div>
+        <div class="service" data-service="Impresiones" data-price="20" onclick="selectService(this)">🖨️ <b>Impresiones</b><span class="small">Recoger y llevar documentos</span></div>
+        <div class="service" data-service="Otro encargo" data-price="25" onclick="selectService(this)">📦 <b>Otro encargo</b><span class="small">Objetos personales u otros</span></div>
+      </div>
+
+      <label>Nombre</label>
+      <input id="name" placeholder="Ej. Alejandro">
+
+      <label>WhatsApp</label>
+      <input id="phone" placeholder="Ej. 33 1234 5678">
+
+      <label>Lugar de recogida</label>
+      <input id="pickup" placeholder="Ej. Biblioteca">
+
+      <label>Lugar de entrega</label>
+      <input id="dropoff" placeholder="Ej. Edificio C">
+
+      <label>Descripción del encargo</label>
+      <textarea id="description" placeholder="Ej. 5 hojas impresas en blanco y negro"></textarea>
+
+      <label>Urgencia</label>
+      <select id="urgency" onchange="updatePrice()">
+        <option value="normal">Normal (30-60 min)</option>
+        <option value="urgente">Urgente (15-30 min)</option>
+        <option value="muyurgente">Muy urgente (0-15 min)</option>
+      </select>
+
+      <button class="primary" style="width:100%;margin-top:18px" onclick="submitRequest()">Solicitar servicio</button>
+    </div>
+
+    <div class="card">
+      <h2>Tu solicitud</h2>
+      <div id="preview">
+        <p class="small">Selecciona un servicio para ver el resumen.</p>
+      </div>
+      <div class="metric">
+        <div><strong id="price">$0</strong><span class="small">Precio estimado</span></div>
+        <div><strong id="time">--</strong><span class="small">Tiempo estimado</span></div>
+        <div><strong id="count">0</strong><span class="small">Solicitudes de prueba</span></div>
+      </div>
+      <hr style="border:0;border-top:1px solid #eee;margin:20px 0">
+      <p class="small"><b>Nota del MVP:</b> el precio es demostrativo. En una versión real dependería de distancia, urgencia y tipo de servicio.</p>
+    </div>
+  </div>
+
+  <div id="success" class="card success">
+    <div class="check">✓</div>
+    <h2>¡Solicitud enviada!</h2>
+    <p>La solicitud fue registrada correctamente.</p>
+    <div class="code" id="requestCode">CE-000</div>
+    <p class="small">En una prueba real, el equipo confirmaría el servicio por WhatsApp.</p>
+    <div class="status"><span class="dot"></span> Solicitud recibida</div>
+    <div class="status"><span class="dot"></span> En espera de repartidor</div>
+    <button class="secondary" onclick="resetForm()">Crear otra solicitud</button>
+  </div>
+</section>
+
+<section id="admin" class="hidden">
+  <div class="card">
+    <h2>📦 Solicitudes recibidas</h2>
+    <div class="metric">
+      <div><strong id="adminTotal">0</strong><span class="small">Solicitudes</span></div>
+      <div><strong id="adminPending">0</strong><span class="small">Pendientes</span></div>
+      <div><strong id="adminDone">0</strong><span class="small">Entregadas</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Código</th><th>Servicio</th><th>Ruta</th><th>Urgencia</th><th>Precio</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody id="requestTable"><tr><td colspan="7" class="small">Aún no hay solicitudes.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<script>
+let selectedService=null;
+let requests=[];
+let seq=1;
+
+function selectService(el){
+  document.querySelectorAll('.service').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedService=el.dataset.service;
+  updatePrice();
+}
+function updatePrice(){
+  if(!selectedService)return;
+  const el=document.querySelector('.service.selected');
+  let p=Number(el.dataset.price);
+  const u=document.getElementById('urgency').value;
+  if(u==='urgente')p+=10;
+  if(u==='muyurgente')p+=20;
+  document.getElementById('price').textContent='$'+p+' MXN';
+  document.getElementById('time').textContent=u==='normal'?'30-60 min':u==='urgente'?'15-30 min':'0-15 min';
+  document.getElementById('preview').innerHTML='<span class="tag">'+selectedService+'</span><p><b>Recogida:</b> '+(document.getElementById('pickup').value||'Por definir')+'</p><p><b>Entrega:</b> '+(document.getElementById('dropoff').value||'Por definir')+'</p>';
+}
+['pickup','dropoff'].forEach(id=>document.getElementById(id).addEventListener('input',updatePrice));
+
+function submitRequest(){
+  if(!selectedService){alert('Selecciona un servicio.');return}
+  const name=document.getElementById('name').value.trim();
+  const pickup=document.getElementById('pickup').value.trim();
+  const dropoff=document.getElementById('dropoff').value.trim();
+  if(!name||!pickup||!dropoff){alert('Completa nombre, lugar de recogida y lugar de entrega.');return}
+  const u=document.getElementById('urgency').value;
+  const base=Number(document.querySelector('.service.selected').dataset.price);
+  const price=base+(u==='urgente'?10:u==='muyurgente'?20:0);
+  const code='CE-'+String(seq++).padStart(3,'0');
+  requests.push({code,service:selectedService,pickup,dropoff,urgency:u,price,status:'Pendiente'});
+  document.getElementById('requestCode').textContent=code;
+  document.getElementById('success').style.display='block';
+  document.getElementById('count').textContent=requests.length;
+  renderAdmin();
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+function resetForm(){
+  document.getElementById('success').style.display='none';
+  document.querySelectorAll('input,textarea').forEach(x=>x.value='');
+  document.querySelectorAll('.service').forEach(x=>x.classList.remove('selected'));
+  selectedService=null;
+  document.getElementById('price').textContent='$0';
+  document.getElementById('time').textContent='--';
+  document.getElementById('preview').innerHTML='<p class="small">Selecciona un servicio para ver el resumen.</p>';
+}
+function showTab(tab){
+  document.getElementById('request').classList.toggle('hidden',tab!=='request');
+  document.getElementById('admin').classList.toggle('hidden',tab!=='admin');
+  document.getElementById('tabRequest').classList.toggle('active',tab==='request');
+  document.getElementById('tabAdmin').classList.toggle('active',tab==='admin');
+}
+function renderAdmin(){
+  document.getElementById('adminTotal').textContent=requests.length;
+  document.getElementById('adminPending').textContent=requests.filter(r=>r.status!=='Entregado').length;
+  document.getElementById('adminDone').textContent=requests.filter(r=>r.status==='Entregado').length;
+  const tbody=document.getElementById('requestTable');
+  if(!requests.length){tbody.innerHTML='<tr><td colspan="7" class="small">Aún no hay solicitudes.</td></tr>';return}
+  tbody.innerHTML=requests.map((r,i)=>`<tr>
+    <td><b>${r.code}</b></td><td>${r.service}</td><td>${r.pickup} → ${r.dropoff}</td>
+    <td>${r.urgency}</td><td>$${r.price}</td><td><span class="badge">${r.status}</span></td>
+    <td><button onclick="advance(${i})">${r.status==='Pendiente'?'Aceptar':r.status==='En proceso'?'Entregar':'✓'}</button></td>
+  </tr>`).join('');
+}
+function advance(i){
+  if(requests[i].status==='Pendiente')requests[i].status='En proceso';
+  else if(requests[i].status==='En proceso')requests[i].status='Entregado';
+  renderAdmin();
+}
+</script>
+</body>
+</html>
